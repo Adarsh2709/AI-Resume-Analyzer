@@ -12,28 +12,48 @@ from typing import List
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Use relative imports - this is the standard way for packages
+# Add current and parent directories to path for maximum robustness
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+for d in [current_dir, parent_dir]:
+    if d not in sys.path:
+        sys.path.insert(0, d)
+
+# Ultra-robust import sequence
+extract_text_from_pdf = None
+extract_skills = None
+get_similarity_scores = None
+get_top_recommendations = None
+get_missing_skills = None
+
 try:
+    # 1. Try relative import
     from .services.parser import extract_text_from_pdf
     from .services.skill_extractor import extract_skills
     from .services.matcher import get_similarity_scores
     from .services.recommender import get_top_recommendations
     from .services.suggestions import get_missing_skills
+    logger.info("Successfully loaded services via relative imports")
 except (ImportError, ValueError):
-    # Fallback for older python or direct script execution
     try:
-        from services.parser import extract_text_from_pdf
-        from services.skill_extractor import extract_skills
-        from services.matcher import get_similarity_scores
-        from services.recommender import get_top_recommendations
-        from services.suggestions import get_missing_skills
-    except ImportError as e:
-        logger.error(f"Failed to import services: {e}")
-        extract_text_from_pdf = None
-        extract_skills = None
-        get_similarity_scores = None
-        get_top_recommendations = None
-        get_missing_skills = None
+        # 2. Try absolute import via 'backend'
+        from backend.services.parser import extract_text_from_pdf
+        from backend.services.skill_extractor import extract_skills
+        from backend.services.matcher import get_similarity_scores
+        from backend.services.recommender import get_top_recommendations
+        from backend.services.suggestions import get_missing_skills
+        logger.info("Successfully loaded services via 'backend' absolute imports")
+    except ImportError:
+        try:
+            # 3. Try local import (if running from inside backend/)
+            from services.parser import extract_text_from_pdf
+            from services.skill_extractor import extract_skills
+            from services.matcher import get_similarity_scores
+            from services.recommender import get_top_recommendations
+            from services.suggestions import get_missing_skills
+            logger.info("Successfully loaded services via local imports")
+        except ImportError as e:
+            logger.error(f"CRITICAL: Failed to load services: {e}")
 
 app = FastAPI(title="AI Resume Analyzer API")
 
@@ -108,22 +128,22 @@ async def analyze_resume(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
     
     if extract_text_from_pdf is None:
-        # Generate a quick health report to include in the error
-        missing_reports = []
-        checks = {
-            "parser (pdfplumber)": "backend.services.parser",
-            "skill_extractor (spacy)": "backend.services.skill_extractor",
-            "matcher (scikit-learn)": "backend.services.matcher"
-        }
-        for label, path in checks.items():
-            try:
-                __import__(path)
-            except ImportError as e:
-                missing_reports.append(f"- {label}: {str(e)}")
-            except Exception as e:
-                missing_reports.append(f"- {label}: Unexpected Error: {str(e)}")
+        # Try to diagnose the failure using both naming conventions
+        for label, module_name in [("parser", "parser"), ("skill_extractor", "skill_extractor"), ("matcher", "matcher")]:
+            error_found = "Not checked"
+            # Try all common paths
+            for path in [f"backend.services.{module_name}", f"services.{module_name}", f".services.{module_name}"]:
+                try:
+                    __import__(path, fromlist=['*'])
+                    error_found = None # Success
+                    break
+                except ImportError as e:
+                    error_found = str(e)
+            
+            if error_found:
+                missing_reports.append(f"- {label}: {error_found}")
         
-        report = "\n".join(missing_reports)
+        report = "\n".join(missing_reports) if missing_reports else "Unknown initialization failure."
         raise HTTPException(
             status_code=500, 
             detail=f"Backend services failed to initialize.\n\nFailed Imports:\n{report}\n\nFix: Run 'pip install -r backend/requirements.txt' and restart."
