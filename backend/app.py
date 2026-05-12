@@ -115,7 +115,26 @@ async def analyze_resume(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
     
     if extract_text_from_pdf is None:
-        raise HTTPException(status_code=500, detail="Backend services are not correctly initialized. Check /health.")
+        # Generate a quick health report to include in the error
+        missing_reports = []
+        checks = {
+            "parser (pdfplumber)": "backend.services.parser",
+            "skill_extractor (spacy)": "backend.services.skill_extractor",
+            "matcher (scikit-learn)": "backend.services.matcher"
+        }
+        for label, path in checks.items():
+            try:
+                __import__(path)
+            except ImportError as e:
+                missing_reports.append(f"- {label}: {str(e)}")
+            except Exception as e:
+                missing_reports.append(f"- {label}: Unexpected Error: {str(e)}")
+        
+        report = "\n".join(missing_reports)
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Backend services failed to initialize.\n\nFailed Imports:\n{report}\n\nFix: Run 'pip install -r backend/requirements.txt' and restart."
+        )
         
     try:
         logger.info(f"Analyzing resume: {file.filename}")
