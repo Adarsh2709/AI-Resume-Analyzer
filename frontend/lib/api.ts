@@ -131,49 +131,25 @@ export function getAnalyzeErrorMessage(error: unknown): string {
     const err = error as AxiosError<unknown>;
     const status = err.response?.status;
     const data = err.response?.data;
+    const url = err.config?.url || "unknown URL";
+    const method = err.config?.method?.toUpperCase() || "POST";
 
+    let msg = `Request failed (${status || "No Status"}). `;
+    
     if (typeof data === "string" && data.trim()) {
-      return data.trim();
-    }
-
-    if (isRecord(data)) {
+      msg += data.trim();
+    } else if (isRecord(data)) {
       const detail = data.detail;
-      if (typeof detail === "string" && detail.trim()) return detail.trim();
-      if (Array.isArray(detail)) {
-        const parts = detail
-          .map((d) =>
-            isRecord(d) && typeof d.msg === "string" ? d.msg : String(d),
-          )
-          .filter(Boolean);
-        if (parts.length) return parts.join(" ");
+      if (typeof detail === "string" && detail.trim()) {
+        msg += detail.trim();
+      } else {
+        msg += JSON.stringify(data);
       }
-      const message = data.message;
-      if (typeof message === "string" && message.trim()) return message.trim();
-      const errorField = data.error;
-      if (typeof errorField === "string" && errorField.trim()) {
-        return errorField.trim();
-      }
+    } else {
+      msg += err.message || "Something went wrong.";
     }
 
-    if (err.code === "ECONNABORTED") {
-      return "The request timed out. Try again with a smaller PDF or check your network.";
-    }
-    if (err.message === "Network Error") {
-      return "Network error. Check NEXT_PUBLIC_API_URL, CORS, and that the API is running.";
-    }
-    if (status === 413) {
-      return "File too large for the server. Try a smaller PDF.";
-    }
-    if (status === 415 || status === 422) {
-      return "The server rejected this file. Ensure it is a valid PDF.";
-    }
-    if (status === 401 || status === 403) {
-      return "You are not authorized to analyze resumes on this API.";
-    }
-    if (typeof status === "number") {
-      return `Request failed (${status}). ${err.message}`.trim();
-    }
-    return err.message || "Something went wrong while contacting the API.";
+    return `${msg}\n\n[Debug Info]\nEndpoint: ${method} ${url}\nTimestamp: ${new Date().toISOString()}`;
   }
 
   if (error instanceof Error) return error.message;
