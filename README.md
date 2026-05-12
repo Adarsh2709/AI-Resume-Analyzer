@@ -12,6 +12,7 @@ An AI-powered Resume Analysis System that parses resume PDFs, extracts skills, c
 - Cosine Similarity Scoring
 - Missing Skills Detection
 - Job Recommendations
+- Responsive Frontend
 - Modular Backend Architecture
 - Lightweight & Deployable
 - No Database Required
@@ -19,6 +20,12 @@ An AI-powered Resume Analysis System that parses resume PDFs, extracts skills, c
 ---
 
 # Tech Stack
+
+## Frontend
+- Next.js
+- React
+- Tailwind CSS
+- Axios
 
 ## Backend
 - FastAPI
@@ -58,6 +65,8 @@ Missing Skills Detection
 Job Recommendations
         ↓
 JSON Response
+        ↓
+Frontend Result Visualization
 ```
 
 ---
@@ -68,6 +77,39 @@ JSON Response
 AI-Resume-Analyzer/
 │
 ├── frontend/
+│   │
+│   ├── app/
+│   │   ├── layout.js
+│   │   ├── globals.css
+│   │   ├── page.js
+│   │   │
+│   │   └── results/
+│   │       └── page.js
+│   │
+│   ├── components/
+│   │   ├── Navbar.jsx
+│   │   ├── HeroSection.jsx
+│   │   ├── UploadBox.jsx
+│   │   ├── FeatureCard.jsx
+│   │   ├── MatchCard.jsx
+│   │   ├── SkillList.jsx
+│   │   ├── MissingSkills.jsx
+│   │   ├── RecommendationCard.jsx
+│   │   ├── Loader.jsx
+│   │   └── Footer.jsx
+│   │
+│   ├── lib/
+│   │   └── api.js
+│   │
+│   ├── public/
+│   │
+│   ├── styles/
+│   │
+│   ├── package.json
+│   ├── tailwind.config.js
+│   ├── postcss.config.js
+│   └── next.config.js
+│
 │
 ├── backend/
 │   │
@@ -97,7 +139,29 @@ AI-Resume-Analyzer/
 
 ---
 
-# API Endpoint
+# Frontend Pages
+
+## Home Page (/)
+
+Contains:
+- Hero Section
+- Features Section
+- Resume Upload Section
+
+---
+
+## Results Page (/results)
+
+Displays:
+- Best Matching Role
+- Match Percentage
+- Extracted Skills
+- Missing Skills
+- Recommended Jobs
+
+---
+
+# Backend API
 
 ## Analyze Resume
 
@@ -105,9 +169,17 @@ AI-Resume-Analyzer/
 POST /analyze
 ```
 
+---
+
 ## Request
 
-Upload PDF using `multipart/form-data`
+Upload PDF using:
+
+```text
+multipart/form-data
+```
+
+---
 
 ## Response
 
@@ -132,7 +204,30 @@ Upload PDF using `multipart/form-data`
 
 ```bash
 git clone <repository-url>
-cd AI-Resume-Analyzer/backend
+```
+
+---
+
+# Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend runs on:
+
+```text
+http://localhost:3000
+```
+
+---
+
+# Backend Setup
+
+```bash
+cd backend
 ```
 
 ---
@@ -169,16 +264,34 @@ pip install -r requirements.txt
 
 ---
 
-# Run Backend
+## Run Backend
 
 ```bash
 uvicorn app:app --reload
 ```
 
-Server runs on:
+Backend runs on:
 
 ```text
 http://127.0.0.1:8000
+```
+
+---
+
+# Environment Variables
+
+## Frontend
+
+Create:
+
+```text
+frontend/.env.local
+```
+
+Add:
+
+```env
+NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
 ```
 
 ---
@@ -189,6 +302,8 @@ http://127.0.0.1:8000
 
 Deploy on:
 - Vercel
+
+---
 
 ## Backend
 
