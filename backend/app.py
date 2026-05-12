@@ -127,7 +127,7 @@ async def analyze_resume(file: UploadFile = File(...)):
     if not file.filename.endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
     
-    if extract_text_from_pdf is None:
+    if any(s is None for s in [extract_text_from_pdf, extract_skills, get_similarity_scores]):
         # Try to diagnose the failure using both naming conventions
         for label, module_name in [("parser", "parser"), ("skill_extractor", "skill_extractor"), ("matcher", "matcher")]:
             error_found = "Not checked"

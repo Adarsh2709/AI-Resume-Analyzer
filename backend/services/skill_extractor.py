@@ -6,11 +6,19 @@ from ..utils.cleaner import clean_text
 
 # Ensure the model is loaded
 try:
-    nlp = spacy.load("en_core_web_sm")
+    try:
+        import en_core_web_sm
+        nlp = en_core_web_sm.load()
+    except ImportError:
+        nlp = spacy.load("en_core_web_sm")
 except OSError:
-    import spacy.cli
-    spacy.cli.download("en_core_web_sm")
-    nlp = spacy.load("en_core_web_sm")
+    try:
+        import spacy.cli
+        spacy.cli.download("en_core_web_sm")
+        nlp = spacy.load("en_core_web_sm")
+    except Exception as e:
+        print(f"Failed to load spaCy model: {e}")
+        raise
 
 import os
 def load_skills() -> List[str]:
