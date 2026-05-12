@@ -131,22 +131,34 @@ async def analyze_resume(file: UploadFile = File(...)):
         # Try to diagnose the failure using both naming conventions
         for label, module_name in [("parser", "parser"), ("skill_extractor", "skill_extractor"), ("matcher", "matcher")]:
             error_found = "Not checked"
-            # Try all common paths
-            for path in [f"backend.services.{module_name}", f"services.{module_name}", f".services.{module_name}"]:
+            # Try all common paths (absolute only for __import__)
+            for path in [f"backend.services.{module_name}", f"services.{module_name}"]:
                 try:
                     __import__(path, fromlist=['*'])
                     error_found = None # Success
                     break
                 except ImportError as e:
                     error_found = str(e)
+                except Exception as e:
+                    error_found = f"{type(e).__name__}: {str(e)}"
             
             if error_found:
                 missing_reports.append(f"- {label}: {error_found}")
         
+        # Add folder structure debugging for Vercel
+        try:
+            cwd = os.getcwd()
+            files = os.listdir(cwd)
+            structure = f"CWD: {cwd}\nFiles: {', '.join(files)}"
+            if 'backend' in files and os.path.isdir('backend'):
+                structure += f"\nBackend contents: {', '.join(os.listdir('backend'))}"
+        except Exception as e:
+            structure = f"Could not list directories: {e}"
+
         report = "\n".join(missing_reports) if missing_reports else "Unknown initialization failure."
         raise HTTPException(
             status_code=500, 
-            detail=f"Backend services failed to initialize.\n\nFailed Imports:\n{report}\n\nFix: Run 'pip install -r backend/requirements.txt' and restart."
+            detail=f"Backend services failed to initialize.\n\nFailed Imports:\n{report}\n\nSystem Info:\n{structure}\n\nFix: Ensure requirements.txt is installed."
         )
         
     try:
