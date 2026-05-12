@@ -1,8 +1,10 @@
 import os
 import sys
 import logging
-from fastapi import FastAPI, UploadFile, File, HTTPException
+import traceback
+from fastapi import FastAPI, UploadFile, File, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List
 
@@ -26,7 +28,12 @@ except ImportError:
         from services.suggestions import get_missing_skills
     except ImportError as e:
         logger.error(f"Failed to import services: {e}")
-        raise
+        # Don't raise here, allow the app to start so we can use the health check
+        extract_text_from_pdf = None
+        extract_skills = None
+        get_similarity_scores = None
+        get_top_recommendations = None
+        get_missing_skills = None
 
 app = FastAPI(title="AI Resume Analyzer API")
 
@@ -39,6 +46,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Global exception handler to return traceback to the frontend for debugging
+@app.middleware("http")
+async def catch_exceptions_middleware(request: Request, call_next):
+    try:
+        return await call_next(request)
+    except Exception as exc:
+        logger.exception("Uncaught exception occurred")
+        # Return the error and traceback in the response detail
+        error_msg = f"{type(exc).__name__}: {str(exc)}"
+        tb = traceback.format_exc()
+        return JSONResponse(
+            status_code=500,
+            content={
+                "detail": f"Backend Error: {error_msg}\n\nTraceback:\n{tb}",
+                "error_type": type(exc).__name__
+            }
+        )
+
 class AnalysisResponse(BaseModel):
     skills: List[str]
     best_match: str
@@ -50,10 +75,47 @@ class AnalysisResponse(BaseModel):
 def read_root():
     return {"message": "AI Resume Analyzer Backend is running."}
 
+@app.get("/health")
+def health_check():
+    """Endpoint to verify system health and module imports."""
+    health = {"status": "ok", "checks": {}}
+    
+    # Check imports
+    missing = []
+    if extract_text_from_pdf is None: missing.append("parser")
+    if extract_skills is None: missing.append("skill_extractor")
+    if get_similarity_scores is None: missing.append("matcher")
+    
+    if missing:
+        health["status"] = "error"
+        health["checks"]["imports"] = f"Missing: {', '.join(missing)}"
+    else:
+        health["checks"]["imports"] = "ok"
+        
+    # Check data files
+    try:
+        from backend.services.matcher import JOB_DESCRIPTIONS
+        health["checks"]["job_descriptions"] = f"Loaded {len(JOB_DESCRIPTIONS)} roles"
+    except Exception as e:
+        health["checks"]["job_descriptions"] = f"Error: {str(e)}"
+        health["status"] = "error"
+        
+    try:
+        from backend.services.skill_extractor import KNOWN_SKILLS
+        health["checks"]["skills_library"] = f"Loaded {len(KNOWN_SKILLS)} skills"
+    except Exception as e:
+        health["checks"]["skills_library"] = f"Error: {str(e)}"
+        health["status"] = "error"
+
+    return health
+
 @app.post("/analyze", response_model=AnalysisResponse)
 async def analyze_resume(file: UploadFile = File(...)):
     if not file.filename.endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
+    
+    if extract_text_from_pdf is None:
+        raise HTTPException(status_code=500, detail="Backend services are not correctly initialized. Check /health.")
         
     try:
         logger.info(f"Analyzing resume: {file.filename}")
@@ -98,12 +160,12 @@ async def analyze_resume(file: UploadFile = File(...)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception(f"Error analyzing resume {file.filename}")
-        raise HTTPException(status_code=500, detail=f"Error analyzing resume: {str(e)}")
+        logger.exception(f"Error during analysis of {file.filename}")
+        # Re-raise to let the middleware handle it with traceback
+        raise
 
 if __name__ == "__main__":
     import uvicorn
-    # Use PORT environment variable if available, otherwise default to 8000
     port = int(os.environ.get("PORT", 8000))
     logger.info(f"Starting server on port {port}")
     uvicorn.run("backend.app:app", host="0.0.0.0", port=port, reload=True)
