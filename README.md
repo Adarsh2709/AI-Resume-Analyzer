@@ -1,5 +1,7 @@
 # AI Resume Analyzer
 
+**Live Demo:** [https://ai-resume-analyzer-ro6x.vercel.app/](https://ai-resume-analyzer-ro6x.vercel.app/)
+
 An AI-powered Resume Analysis System that parses resume PDFs, extracts skills, compares resumes with job descriptions, and generates intelligent job recommendations using NLP and Machine Learning techniques.
 
 ---
