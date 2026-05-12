@@ -1,6 +1,6 @@
 from typing import List
-from backend.services.matcher import JOB_DESCRIPTIONS
-from backend.services.skill_extractor import extract_skills
+from .matcher import JOB_DESCRIPTIONS
+from .skill_extractor import extract_skills
 
 def get_missing_skills(resume_skills: List[str], best_match_role: str) -> List[str]:
     """

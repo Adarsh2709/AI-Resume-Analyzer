@@ -1,12 +1,5 @@
 import os
 import sys
-
-# Add the project root to sys.path to ensure 'backend' can be imported 
-# regardless of where the script is started from.
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
-
 import logging
 import traceback
 from fastapi import FastAPI, UploadFile, File, HTTPException, Request
@@ -19,14 +12,15 @@ from typing import List
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Robust imports to handle different execution contexts
+# Use relative imports - this is the standard way for packages
 try:
-    from backend.services.parser import extract_text_from_pdf
-    from backend.services.skill_extractor import extract_skills
-    from backend.services.matcher import get_similarity_scores
-    from backend.services.recommender import get_top_recommendations
-    from backend.services.suggestions import get_missing_skills
-except ImportError:
+    from .services.parser import extract_text_from_pdf
+    from .services.skill_extractor import extract_skills
+    from .services.matcher import get_similarity_scores
+    from .services.recommender import get_top_recommendations
+    from .services.suggestions import get_missing_skills
+except (ImportError, ValueError):
+    # Fallback for older python or direct script execution
     try:
         from services.parser import extract_text_from_pdf
         from services.skill_extractor import extract_skills
@@ -35,7 +29,6 @@ except ImportError:
         from services.suggestions import get_missing_skills
     except ImportError as e:
         logger.error(f"Failed to import services: {e}")
-        # Don't raise here, allow the app to start so we can use the health check
         extract_text_from_pdf = None
         extract_skills = None
         get_similarity_scores = None

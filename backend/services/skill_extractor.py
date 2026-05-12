@@ -2,7 +2,7 @@ import json
 import spacy
 from spacy.matcher import PhraseMatcher
 from typing import List
-from backend.utils.cleaner import clean_text
+from ..utils.cleaner import clean_text
 
 # Ensure the model is loaded
 try:

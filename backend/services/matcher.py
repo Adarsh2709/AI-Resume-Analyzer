@@ -2,7 +2,7 @@ import os
 from typing import Dict, List, Tuple
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from backend.utils.cleaner import clean_text
+from ..utils.cleaner import clean_text
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JOB_DESCRIPTIONS_DIR = os.path.join(BASE_DIR, "data", "job_descriptions")
