@@ -1,6 +1,10 @@
 from typing import List
-from .matcher import JOB_DESCRIPTIONS
-from .skill_extractor import extract_skills
+try:
+    from .matcher import JOB_DESCRIPTIONS
+    from .skill_extractor import extract_skills
+except (ImportError, ValueError):
+    from matcher import JOB_DESCRIPTIONS
+    from skill_extractor import extract_skills
 
 def get_missing_skills(resume_skills: List[str], best_match_role: str) -> List[str]:
     """

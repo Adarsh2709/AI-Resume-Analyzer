@@ -19,41 +19,29 @@ for d in [current_dir, parent_dir, "/var/task", "/var/task/backend"]:
     if os.path.exists(d) and d not in sys.path:
         sys.path.insert(0, d)
 
-# Ultra-robust import sequence
-extract_text_from_pdf = None
-extract_skills = None
-get_similarity_scores = None
-get_top_recommendations = None
-get_missing_skills = None
-
+# Finalized robust imports for Vercel flattening
 try:
-    # 1. Try relative import
-    from .services.parser import extract_text_from_pdf
-    from .services.skill_extractor import extract_skills
-    from .services.matcher import get_similarity_scores
-    from .services.recommender import get_top_recommendations
-    from .services.suggestions import get_missing_skills
-    logger.info("Successfully loaded services via relative imports")
-except (ImportError, ValueError):
+    from services.parser import extract_text_from_pdf
+    from services.skill_extractor import extract_skills
+    from services.matcher import get_similarity_scores
+    from services.recommender import get_top_recommendations
+    from services.suggestions import get_missing_skills
+    logger.info("Successfully loaded services via direct imports")
+except ImportError:
     try:
-        # 2. Try absolute import via 'backend'
         from backend.services.parser import extract_text_from_pdf
         from backend.services.skill_extractor import extract_skills
         from backend.services.matcher import get_similarity_scores
         from backend.services.recommender import get_top_recommendations
         from backend.services.suggestions import get_missing_skills
-        logger.info("Successfully loaded services via 'backend' absolute imports")
-    except ImportError:
-        try:
-            # 3. Try local import (if running from inside backend/)
-            from services.parser import extract_text_from_pdf
-            from services.skill_extractor import extract_skills
-            from services.matcher import get_similarity_scores
-            from services.recommender import get_top_recommendations
-            from services.suggestions import get_missing_skills
-            logger.info("Successfully loaded services via local imports")
-        except ImportError as e:
-            logger.error(f"CRITICAL: Failed to load services: {e}")
+        logger.info("Successfully loaded services via backend prefix")
+    except ImportError as e:
+        logger.error(f"CRITICAL: Failed to load services: {e}")
+        extract_text_from_pdf = None
+        extract_skills = None
+        get_similarity_scores = None
+        get_top_recommendations = None
+        get_missing_skills = None
 
 app = FastAPI(title="AI Resume Analyzer API")
 

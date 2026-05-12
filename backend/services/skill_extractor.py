@@ -2,7 +2,13 @@ import json
 import spacy
 from spacy.matcher import PhraseMatcher
 from typing import List
-from ..utils.cleaner import clean_text
+try:
+    from ..utils.cleaner import clean_text
+except (ImportError, ValueError):
+    try:
+        from utils.cleaner import clean_text
+    except ImportError:
+        from backend.utils.cleaner import clean_text
 
 # Ensure the model is loaded
 try:
