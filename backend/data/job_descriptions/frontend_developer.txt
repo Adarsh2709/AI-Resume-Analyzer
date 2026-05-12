@@ -1,0 +1,5 @@
+We are looking for a creative Frontend Developer with deep knowledge of JavaScript, TypeScript, React, and Next.js.
+You should be comfortable building responsive UIs using modern CSS frameworks.
+Experience with state management libraries and integrating with RESTful APIs is required.
+Familiarity with version control (Git) and agile methodologies is expected.
+Strong communication skills and an eye for design are highly valued.
