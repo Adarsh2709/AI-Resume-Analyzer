@@ -12,8 +12,10 @@ except OSError:
     spacy.cli.download("en_core_web_sm")
     nlp = spacy.load("en_core_web_sm")
 
+import os
 def load_skills() -> List[str]:
-    with open("backend/data/skills.json", "r") as f:
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    with open(os.path.join(base_dir, "data", "skills.json"), "r", encoding="utf-8") as f:
         skills = json.load(f)
     return [skill.lower() for skill in skills]
 

@@ -4,7 +4,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from backend.utils.cleaner import clean_text
 
-JOB_DESCRIPTIONS_DIR = "backend/data/job_descriptions"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+JOB_DESCRIPTIONS_DIR = os.path.join(BASE_DIR, "data", "job_descriptions")
 
 def load_job_descriptions() -> Dict[str, str]:
     jobs = {}
@@ -13,7 +14,7 @@ def load_job_descriptions() -> Dict[str, str]:
     for filename in os.listdir(JOB_DESCRIPTIONS_DIR):
         if filename.endswith(".txt"):
             role_name = filename.replace(".txt", "").replace("_", " ").title()
-            with open(os.path.join(JOB_DESCRIPTIONS_DIR, filename), "r") as f:
+            with open(os.path.join(JOB_DESCRIPTIONS_DIR, filename), "r", encoding="utf-8") as f:
                 jobs[role_name] = clean_text(f.read())
     return jobs
 
