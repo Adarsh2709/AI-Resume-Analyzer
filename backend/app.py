@@ -87,33 +87,26 @@ def health_check():
     """Endpoint to verify system health and module imports."""
     health = {"status": "ok", "checks": {}}
     
-    # Check imports
-    missing = []
-    if extract_text_from_pdf is None: missing.append("parser")
-    if extract_skills is None: missing.append("skill_extractor")
-    if get_similarity_scores is None: missing.append("matcher")
+    # Check imports and show specific errors
+    checks = {
+        "parser": "backend.services.parser",
+        "skill_extractor": "backend.services.skill_extractor",
+        "matcher": "backend.services.matcher",
+        "recommender": "backend.services.recommender",
+        "suggestions": "backend.services.suggestions"
+    }
     
-    if missing:
-        health["status"] = "error"
-        health["checks"]["imports"] = f"Missing: {', '.join(missing)}"
-    else:
-        health["checks"]["imports"] = "ok"
-        
-    # Check data files
-    try:
-        from backend.services.matcher import JOB_DESCRIPTIONS
-        health["checks"]["job_descriptions"] = f"Loaded {len(JOB_DESCRIPTIONS)} roles"
-    except Exception as e:
-        health["checks"]["job_descriptions"] = f"Error: {str(e)}"
-        health["status"] = "error"
-        
-    try:
-        from backend.services.skill_extractor import KNOWN_SKILLS
-        health["checks"]["skills_library"] = f"Loaded {len(KNOWN_SKILLS)} skills"
-    except Exception as e:
-        health["checks"]["skills_library"] = f"Error: {str(e)}"
-        health["status"] = "error"
-
+    for name, module_path in checks.items():
+        try:
+            __import__(module_path)
+            health["checks"][name] = "ok"
+        except ImportError as e:
+            health["checks"][name] = f"ImportError: {str(e)}"
+            health["status"] = "error"
+        except Exception as e:
+            health["checks"][name] = f"Error: {str(e)}"
+            health["status"] = "error"
+            
     return health
 
 @app.post("/analyze", response_model=AnalysisResponse)
