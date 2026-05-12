@@ -1,0 +1,10 @@
+[
+  "python", "java", "c++", "c", "c#", "javascript", "typescript", "ruby", "go", "swift", "kotlin", "php", "rust",
+  "react", "angular", "vue", "next.js", "node.js", "express", "django", "flask", "fastapi", "spring boot",
+  "sql", "mysql", "postgresql", "mongodb", "cassandra", "redis", "elasticsearch",
+  "aws", "azure", "gcp", "docker", "kubernetes", "terraform", "ansible", "jenkins", "gitlab ci", "github actions",
+  "machine learning", "deep learning", "nlp", "computer vision", "tensorflow", "pytorch", "scikit-learn", "pandas", "numpy", "matplotlib",
+  "data analysis", "data visualization", "tableau", "power bi", "excel", "statistics",
+  "git", "linux", "bash", "agile", "scrum", "jira",
+  "communication", "teamwork", "problem solving", "leadership", "time management"
+]

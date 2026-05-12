@@ -1,0 +1,6 @@
+We are hiring a Data Analyst to join our data team.
+The candidate must be proficient in SQL, Python, and Excel.
+Experience with data visualization tools like Tableau or Power BI is required.
+You should have a strong understanding of statistics, data analysis, and reporting.
+Familiarity with pandas and numpy for data manipulation is essential.
+Good communication skills to present findings to stakeholders are needed.

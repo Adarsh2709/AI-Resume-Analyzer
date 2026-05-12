@@ -1,0 +1,5 @@
+We are looking for a Machine Learning Engineer with strong experience in Python, TensorFlow, PyTorch, and scikit-learn.
+The ideal candidate should have a solid background in data analysis, statistics, and building predictive models.
+Experience with pandas, numpy, and deploying models to AWS or GCP is highly desirable.
+Knowledge of natural language processing (NLP) or computer vision is a plus.
+Docker and Kubernetes experience for model deployment is preferred.

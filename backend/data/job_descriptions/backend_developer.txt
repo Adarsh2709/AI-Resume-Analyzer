@@ -1,0 +1,5 @@
+We are seeking a Backend Developer proficient in Python, Node.js, and SQL.
+You will be responsible for building robust APIs using FastAPI, Express, or Django.
+Experience with PostgreSQL or MongoDB is required.
+Familiarity with Docker, AWS, and CI/CD pipelines (GitHub Actions, Jenkins) is necessary.
+Strong problem solving skills and experience with Git are expected.
