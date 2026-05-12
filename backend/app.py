@@ -12,11 +12,11 @@ from typing import List
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Add current and parent directories to path for maximum robustness
+# Add current, parent, and Vercel task directories to path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
-for d in [current_dir, parent_dir]:
-    if d not in sys.path:
+for d in [current_dir, parent_dir, "/var/task", "/var/task/backend"]:
+    if os.path.exists(d) and d not in sys.path:
         sys.path.insert(0, d)
 
 # Ultra-robust import sequence
